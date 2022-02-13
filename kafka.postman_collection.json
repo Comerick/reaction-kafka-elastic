@@ -1,0 +1,158 @@
+{
+	"info": {
+		"_postman_id": "95887ea1-ef94-4090-a97d-1ee2a8f9521b",
+		"name": "kafka",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:9200/mongodb.mediastream.test/_search?pretty=true",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9200/mongodb.mediastream.test/_search?pretty=true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9200",
+					"path": [
+						"mongodb.mediastream.test",
+						"_search"
+					],
+					"query": [
+						{
+							"key": "pretty",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:9200/mongodb.mediastream.test/",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9200/mongodb.mediastream.test/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9200",
+					"path": [
+						"mongodb.mediastream.test",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8083/connectors",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n     \"name\": \"elastic-sink\",\r\n\r\n     \"config\": {\r\n\r\n            \"connector.class\": \"io.confluent.connect.elasticsearch.ElasticsearchSinkConnector\",\r\n\r\n           \"tasks.max\": \"1\",\r\n\r\n           \"topics\": \"mongodb.mediastream.test\",\r\n\r\n            \"connection.url\": \"http://elastic:9200\",\r\n\r\n            \"transforms\": \"unwrap,key\",\r\n\r\n            \"transforms.unwrap.type\": \"io.debezium.transforms.UnwrapFromEnvelope\",\r\n            \"transforms.key.type\": \"org.apache.kafka.connect.transforms.ExtractField$Key\",\r\n\r\n            \"transforms.key.field\": \"id\",\r\n\r\n           \"type.name\": \"_doc\",\r\n\r\n            \"key.ignore\": \"false\"\r\n\r\n     }\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8083/connectors",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"connectors"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8083/connectors",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n{\r\n     \"name\": \"mongo-source\",\r\n\r\n     \"config\": {\r\n\r\n           \"name\": \"mongo-source\",\r\n\r\n            \"connector.class\": \"io.debezium.connector.mongodb.MongoDbConnector\",\r\n\r\n            \"mongodb.name\": \"mongodb\",\r\n\r\n            \"mongodb.hosts\": \"replica0/mongodb:27017\",\r\n\r\n            \"mongodb.user\": \"abc\",\r\n\r\n            \"mongodb.password\": \"abc\",\r\n\r\n            \"tasks.max\": \"1\",\r\n\r\n            \"database.history.kafka.bootstrap.servers\": \"kafka:9092\",\r\n\r\n            \"database.history.kafka.topic\": \"schema-changes.mediastream\",\r\n\r\n           \"internal.key.converter\": \"org.apache.kafka.connect.json.JsonConverter\",\r\n\r\n            \"internal.value.converter\": \"org.apache.kafka.connect.json.JsonConverter\",\r\n\r\n            \"value.converter\": \"org.apache.kafka.connect.json.JsonConverter\",\r\n            \"transforms\": \"unwrap\",\r\n\r\n            \"transforms.unwrap.type\": \"io.debezium.connector.mongodb.transforms.ExtractNewDocumentState\"\r\n\r\n     }\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8083/connectors",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"connectors"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8083/connectors",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n    \"name\": \"mongo-sink\",\r\n\r\n    \"config\": {\r\n\r\n        \"name\": \"mongo-sink\",\r\n\r\n        \"connector.class\": \"com.mongodb.kafka.connect.MongoSinkConnector\",\r\n\r\n        \"tasks.max\": \"1\",\r\n\r\n        \"topics\": \"test\",\r\n\r\n        \"connection.uri\": \"mongodb://abc:abc@mongodb:27017\",\r\n\r\n        \"database\": \"mediastream\",\r\n\r\n        \"collection\": \"test\",\r\n\r\n        \"key.converter\": \"org.apache.kafka.connect.json.JsonConverter\",\r\n        \"key.converter.schemas.enable\": false,\r\n\r\n        \"value.converter\": \"org.apache.kafka.connect.json.JsonConverter\",\r\n        \"value.converter.schemas.enable\": false,\r\n\r\n        \"document.id.strategy\": \"com.mongodb.kafka.connect.sink.processor.id.strategy.ProvidedInValueStrategy\",\r\n\r\n        \"writemodel.strategy\": \"com.mongodb.kafka.connect.sink.writemodel.strategy.UpdateOneTimestampsStrategy\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8083/connectors",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"connectors"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8083/connectors",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8083/connectors",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"connectors"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
