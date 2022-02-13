@@ -4,40 +4,37 @@ networks:
   reaction:
     external:
       name: reaction.localhost
-  kafka_net:
-    driver: "bridge"
-
 
 services:
-  reaction-zookeeper:
-    container_name: reaction-zookeper
+  zookeeper:
+    container_name: zookeeper
     image: debezium/zookeeper:0.9
     ports:
       - '2181:2181'
       - '2888:2888'
       - '3888:3888'
-    restart: unless-stopped
+ #   restart: unless-stopped
     networks:
       - reaction
-      - kafka_net
 
-  reaction-kafka:
-    container_name: reaction-kafka
+  kafka:
+    container_name: kafka
     image: debezium/kafka:0.9
-    links:
-      - reaction-zookeeper
+    depends_on:
+      - zookeeper
     environment:
-      - ZOOKEEPER_CONNECT=reaction-zookeper:2181
+      - ZOOKEEPER_CONNECT=zookeeper:2181
     ports:
       - '9092:9092'
-    restart: unless-stopped
     networks:
       - reaction
-      - kafka_net
 
-  reaction-elastic:
+  elastic:
     image: elasticsearch:7.7.0
-    container_name: reaction-elastic
+    container_name: elastic
+    depends_on:
+      - zookeeper
+      - kafka
     ports:
       - '9200:9200'
       - '9300:9300'
@@ -45,11 +42,10 @@ services:
       - discovery.type=single-node
     networks:
       - reaction
-    restart: on-failure
 
-  reaction-mongodb:
+  mongodb:
     image: mongo:4.0.4
-    container_name: reaction-mongodb
+    container_name: mongodb
     volumes:
       - type: volume
         source: reaction-mongodb
@@ -60,31 +56,27 @@ services:
     command: --replSet replica0
     networks:
       - reaction
-    restart: on-failure
 
-  reaction-kafka-connect:
+  connect:
     image: swarnavac/connect:1.0
-    container_name: reaction-kafka-connect
+    container_name: connect
     depends_on:
-      - reaction-elastic
-      - reaction-kafka
-      - reaction-mongodb
-    external_links:
-      - reaction-elastic
-      - reaction-kafka
-      - reaction-mongodb
+      - elastic
+      - kafka
+      - mongodb
     environment:
       - GROUP_ID=1
       - CONFIG_STORAGE_TOPIC=my_connect_configs
-      - OFFSET_STORAGE_TOPIC=25
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
       - STATUS_STORAGE_TOPIC=my_connect_statuses
-      - BOOTSTRAP_SERVERS=reaction-elastic:9200,reaction-kafka:9092,reaction-zookeper:2181
+      - BOOTSTRAP_SERVERS=elastic:9200,kafka:9092,zookeeper:2181
+    #  - ADVERTISED_HOST_NAME=kafka:9092
     ports:
       - '8083:8083'
+      - '8778:8778'
+      - '9779:9779'
     networks:
       - reaction
-      - kafka_net
-    restart: on-failure
 
 volumes:
   reaction-mongodb:
