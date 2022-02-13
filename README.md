@@ -1,5 +1,10 @@
 # reaction-kafka-elastic
 
+##Notice
+Change reaction, reaction-admin mongodb port, it cause error for reaction, reaction-admin
+
+##Notes
+
 Setup docker-compose.yml based on the article https://dzone.com/articles/implementing-mongodb-to-elastic-search-7x-data-pip
 
 
